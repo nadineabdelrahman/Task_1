@@ -82,3 +82,35 @@ export async function deletePerk(req, res, next) {
     res.json({ ok: true });
   } catch (err) { next(err); }
 }
+
+const titleSchema = Joi.object({
+  title: Joi.string().min(2).required(),
+});
+
+export async function updateTitle(req, res, next) {
+  try {
+   
+    const { value, error } = titleSchema.validate(req.body, {
+      abortEarly: false,
+      stripUnknown: true,
+    });
+    if (error) {
+      return res.status(400).json({ message: error.message });
+    }
+
+    const { id } = req.params;
+
+    
+    const updated = await Perk.findByIdAndUpdate(
+      id,
+      { $set: { title: value.title } },
+      { new: true } 
+    );
+
+    if (!updated) return res.status(404).json({ message: 'Perk not found' });
+
+    res.json({ perk: updated });
+  } catch (err) {
+    next(err);
+  }
+}
